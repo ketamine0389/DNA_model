@@ -47,49 +47,73 @@ const whiteMaterial  = new THREE.MeshPhysicalMaterial(new ColoredMaterial(white)
  */
 
 const ladderGeometry = new THREE.CylinderGeometry(0.3, 0.3, 6, 32);
-const rectGeometry = new THREE.BoxGeometry(.75, 3, 1);
+const bigSphereGeometry = new THREE.SphereGeometry(0.8,32,32);
+const smallSphereGeometry = new THREE.SphereGeometry(0.6,32,32);
 
+const randomNum = function ( min, max ) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
 /*
  * Generating the "ladder"
  */
 
 for (var i=0; i <= 40; i++) {
-    const meshArr = [
+    let meshArr = [
         new THREE.Mesh(ladderGeometry, blueMaterial),
+        new THREE.Mesh(ladderGeometry, whiteMaterial),
         new THREE.Mesh(ladderGeometry, yellowMaterial),
-        new THREE.Mesh(ladderGeometry, redMaterial),
-        new THREE.Mesh(ladderGeometry, whiteMaterial)
+        new THREE.Mesh(ladderGeometry, redMaterial)
     ];
 
-    let leftLadderMesh = meshArr[Math.floor(Math.random() * 4)];
-    let rightLadderMesh = meshArr[Math.floor(Math.random() * 4)];
+    let leftLadderMesh;
+    let rightLadderMesh;
+
+    if ( randomNum( 0, 4 ) >= 2 ) {
+        let int = randomNum( 0, 1 );
+        leftLadderMesh = meshArr[int];
+        rightLadderMesh = meshArr[Math.abs(int-1)];    
+    } else {
+        let int = randomNum( 0, 1 );
+        leftLadderMesh = meshArr[int+2];
+        rightLadderMesh = meshArr[Math.abs(int-1)+2];    
+    }
+
+    
+    /*
+     * Positioning the elements
+     */
 
     leftLadderMesh.rotation.z = 90 * Math.PI/180;
-    rightLadderMesh.rotation.z = 90 * Math.PI/180; 
+    rightLadderMesh.rotation.z = 90 * Math.PI/180;
     leftLadderMesh.position.x = -3;
     rightLadderMesh.position.x= 3;
 
-    let purpleRect = new THREE.Mesh(rectGeometry, purpleMaterial);
-    let pinkRect = new THREE.Mesh(rectGeometry, pinkMaterial);
 
-    let rectRightMesh = Math.random() > 0.5 ?purpleRect:pinkRect;
-    rectRightMesh.position.x = 6;
-	rectRightMesh.rotation.x = -Math.PI/3.893;
-	
-    /* this is stupid but it has to be here */
-    purpleRect = new THREE.Mesh(rectGeometry, purpleMaterial);
-    pinkRect = new THREE.Mesh(rectGeometry, pinkMaterial);
+    /* 
+     * Making the outer spheres
+     */
 
-    let rectLeftMesh = Math.random() > 0.5 ?purpleRect:pinkRect;
-    rectLeftMesh.position.x = -6;
-	rectLeftMesh.rotation.x = Math.PI/3.893;
+    let sphLeft = new THREE.Mesh( bigSphereGeometry, purpleMaterial );
+    let sphLeftUpper = new THREE.Mesh( smallSphereGeometry, pinkMaterial );
+    let sphRight = new THREE.Mesh( bigSphereGeometry, purpleMaterial );
+    let sphRightUpper = new THREE.Mesh( smallSphereGeometry, pinkMaterial );
+    
+    sphLeft.position.x = 6;
+    sphLeftUpper.position.x = 6;
+    sphRight.position.x = -6;
+    sphRightUpper.position.x = -6;
+    
+    sphLeftUpper.position.y = 1;
+    sphLeftUpper.position.z = -1;
+    sphRightUpper.position.y = 1;
+    sphRightUpper.position.z = 1;
 
     let row = new THREE.Object3D();
     row.add(leftLadderMesh);
     row.add(rightLadderMesh);
-    row.add(rectRightMesh);
-    row.add(rectLeftMesh);
+    row.add(sphLeft);
+    row.add(sphLeftUpper);
+    row.add(sphRight);
+    row.add(sphRightUpper);
 
     row.position.y = i*2;
     row.rotation.y = 20*i * Math.PI/180;
@@ -132,9 +156,9 @@ const gui2 = new dat.GUI({width:150});
 const g1 = gui2.addFolder( 'Purple = Deoxyribose' );
 const g2 = gui2.addFolder( 'Pink = Phosphate' );
 const g3 = gui2.addFolder( 'Blue = Adenine' );
+const g6 = gui2.addFolder( 'White = Thymine' );
 const g4 = gui2.addFolder( 'Red = Guanine' );
 const g5 = gui2.addFolder( 'Yellow = Cytosine' );
-const g6 = gui2.addFolder( 'White = Thymine' );
 
 
 /*
@@ -144,8 +168,8 @@ const g6 = gui2.addFolder( 'White = Thymine' );
 const render = function () {
     requestAnimationFrame( render );
     
-    /* holder.rotation.x += 0.001; // rotate up / down */
-    holder.rotation.y += dummy.speed; // rotate left / right
+    /* holder.rotation.x += 0.001; up down */
+    holder.rotation.y += dummy.speed; /* left right */
     renderer.render( scene, camera );
 }
 
